@@ -4,6 +4,14 @@ Written By: Jeffrey Bentley
 Name: PSCommander
 Description: PS Commander is a versatile and user-friendly GUI application designed to execute and manage PowerShell commands efficiently. Built using the CustomTkinter library, this application offers a simplistic experience for both novice and advanced users of PowerShell.
 """
+
+"""
+Date: July 8, 2024
+Written By: Jeffrey Bentley
+Name: PSCommander
+Description: PS Commander is a versatile and user-friendly GUI application designed to execute and manage PowerShell commands efficiently. Built using the CustomTkinter library, this application offers a simplistic experience for both novice and advanced users of PowerShell.
+"""
+
 import customtkinter as ctk
 from tkinter import PhotoImage, messagebox, filedialog
 import subprocess
@@ -136,10 +144,9 @@ def create_gui():
     root.title("PowerShell Commander")
     root.geometry("800x600")
 
-    # Standard tkinter way to load an image
-    icon_path = "E:/DEV/Local/EXE/Visual Basic/Python/PSCommander-ico.png"
-    icon_image = PhotoImage(file=icon_path)
-    root.tk.call('wm', 'iconphoto', root._w, icon_image)
+    # Set ICO file as application icon
+    icon_path = "E:/DEV/Local/EXE/Visual Basic/Python/PSCommander.ico"
+    root.iconbitmap(icon_path)
 
     main_frame = ctk.CTkFrame(root)
     main_frame.pack(expand=True, fill="both", padx=10, pady=10)
@@ -203,5 +210,3 @@ def create_gui():
 
 if __name__ == "__main__":
     create_gui()
-
-
