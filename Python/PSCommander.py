@@ -2,153 +2,202 @@
 Date: July 8, 2024
 Written By: Jeffrey Bentley
 Name: PSCommander
-Description: PS Commander is a versatile and user-friendly GUI application designed to execute and manage PowerShell commands efficiently. Built using the Tkinter library in Python, this application offers a simplistic experience for both novice and advanced users of PowerShell.
+Description: PS Commander is a versatile and user-friendly GUI application designed to execute and manage PowerShell commands efficiently. Built using the CustomTkinter library, this application offers a simplistic experience for both novice and advanced users of PowerShell.
 """
-
-import tkinter as tk
-from tkinter import messagebox, ttk
+import customtkinter as ctk
+from tkinter import PhotoImage, messagebox, filedialog
 import subprocess
 import threading
 import time
+import csv
+
+# Dictionary of regular preset commands
+preset_commands = {
+    "System Information": "Get-CimInstance -ClassName Win32_ComputerSystem | Format-List *",
+    "List Disk Drives": "Get-WmiObject -Class Win32_DiskDrive | Select-Object DeviceID, Model, Size, MediaType",
+    "List Network Adapters": "Get-NetAdapter | Select-Object Name, InterfaceDescription, Status, MacAddress",
+    "List Active Network Connections": "Get-NetTCPConnection | Select-Object LocalAddress, LocalPort, RemoteAddress, RemotePort, State",
+    "List Printers": "Get-Printer | Select-Object Name, DriverName, PortName, Shared",
+    "List Installed Software": "Get-WmiObject -Class Win32_Product | Select-Object Name, Vendor, Version, InstallDate",
+    "List Processes": "Get-Process | Select-Object Name, Id, CPU, Responding, Path",
+    "List Services": "Get-Service | Select-Object DisplayName, Status, ServiceType, StartType",
+    "Check System Uptime": "Get-CimInstance Win32_OperatingSystem | Select-Object LastBootUpTime, @{Name='Uptime';Expression={[DateTime]::Now - [Management.ManagementDateTimeConverter]::ToDateTime($_.LastBootUpTime)}}"
+}
+
+# Dictionary of help mode preset commands
+preset_help = {
+    "System Information": "Get-Help Get-CimInstance",
+    "List Disk Drives": "Get-Help Get-WmiObject",
+    "List Network Adapters": "Get-Help Get-NetAdapter",
+    "List Active Network Connections": "Get-Help Get-NetTCPConnection",
+    "List Printers": "Get-Help Get-Printer",
+    "List Installed Software": "Get-Help Get-WmiObject",
+    "List Processes": "Get-Help Get-Process",
+    "List Services": "Get-Help Get-Service",
+    "Check System Uptime": "Get-Help Get-CimInstance"
+}
+
+# Global variable for help mode toggle
+help_toggle = None
+
+def toggle_help_commands():
+    global preset_commands, preset_help, help_toggle
+
+    if help_toggle.get():
+        return preset_help
+    else:
+        return preset_commands
 
 def run_command(command, output_text, progress_var, root):
     try:
         progress_var.set(0)
-        root.update_idletasks()  # Ensure GUI is updated
         
-        # Run the PowerShell command asynchronously
         process = subprocess.Popen(["powershell", "-Command", command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-        output_text.delete(1.0, tk.END)  # Clear previous output
+        output_text.delete(1.0, ctk.END)
 
-        # Read stdout and stderr in separate threads to prevent blocking
         def read_stdout():
+            total_output = ""
             for line in iter(process.stdout.readline, ''):
-                output_text.insert(tk.END, line)
-                root.update_idletasks()  # Update GUI to show the command output
-                progress_var.set(progress_var.get() + 0.5)  # Increment progress bar
+                total_output += line
+                output_text.insert(ctk.END, line)
+                root.update_idletasks()
+                progress_var.set(len(total_output) / 10)  # Increment based on length of output
             process.stdout.close()
 
         def read_stderr():
+            total_output = ""
             for line in iter(process.stderr.readline, ''):
-                output_text.insert(tk.END, line)
-                root.update_idletasks()  # Update GUI to show the command output
-                progress_var.set(progress_var.get() + 0.5)  # Increment progress bar
+                total_output += line
+                output_text.insert(ctk.END, line)
+                root.update_idletasks()
+                progress_var.set(len(total_output) / 10)  # Increment based on length of output
             process.stderr.close()
 
-        # Start threads for reading stdout and stderr
         threading.Thread(target=read_stdout, daemon=True).start()
         threading.Thread(target=read_stderr, daemon=True).start()
 
-        # Wait for the process to finish
         while process.poll() is None:
             time.sleep(0.1)
-            progress_var.set(progress_var.get() + 0.5)
-            root.update_idletasks()  # Update GUI
+            root.update_idletasks()
 
-        # Ensure progress bar reaches 100% at completion
         progress_var.set(100)
-        root.update_idletasks()  # Final update of GUI
+        root.update_idletasks()
 
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
 def submit_command(command_entry, output_text, progress_var, root):
-    command = command_entry.get("1.0", tk.END).strip()  # Get command from text box
+    command = command_entry.get("1.0", ctk.END).strip()
     if command:
-        # Clear output before running new command
-        output_text.delete(1.0, tk.END)
-        # Reset progress bar
+        output_text.delete(1.0, ctk.END)
         progress_var.set(0)
-        # Run command asynchronously
+        commands = toggle_help_commands()
+        if help_toggle.get():
+            # Find the corresponding command label in help mode dictionary
+            for label, cmd in commands.items():
+                if label == command:
+                    command = cmd
+                    break
         threading.Thread(target=run_command, args=(command, output_text, progress_var, root), daemon=True).start()
     else:
         messagebox.showwarning("Warning", "Please enter a PowerShell command.")
 
 def clear_output(output_text):
-    output_text.delete(1.0, tk.END)
+    output_text.delete(1.0, ctk.END)
 
 def load_command(command_entry, command):
-    command_entry.delete("1.0", tk.END)  # Clear existing text
-    command_entry.insert(tk.END, command.strip())  # Load new command
+    command_entry.delete("1.0", ctk.END)
+    command_entry.insert(ctk.END, command.strip())
+
+def export_to_csv():
+    global preset_commands
+
+    # Ask user for file save location
+    file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+    if file_path:
+        try:
+            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerow(["Command Label", "PowerShell Command"])
+                for label, command in preset_commands.items():
+                    csv_writer.writerow([label, command])
+            messagebox.showinfo("Export Successful", f"Commands exported to {file_path}")
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Failed to export commands: {str(e)}")
 
 def create_gui():
-    root = tk.Tk()
+    global preset_commands
+
+    ctk.set_appearance_mode("System")  # Use a light appearance mode
+    ctk.set_default_color_theme("blue")  # Choose a blue color theme
+
+    root = ctk.CTk()
     root.title("PowerShell Commander")
-    root.configure(bg="#333333")
+    root.geometry("800x600")
 
-    style = ttk.Style()
-    style.configure("TButton", padding=6, relief="flat", background="#666666", foreground="black")
-    style.configure("TLabel", background="#333333", foreground="white")
-    style.configure("TFrame", background="#333333")
-    style.configure("TText", background="#444444", foreground="white")
+    # Standard tkinter way to load an image
+    icon_path = "E:/DEV/Local/EXE/Visual Basic/Python/PSCommander-ico.png"
+    icon_image = PhotoImage(file=icon_path)
+    root.tk.call('wm', 'iconphoto', root._w, icon_image)
 
-    main_frame = ttk.Frame(root)
-    main_frame.pack(expand=True, fill=tk.BOTH)
+    main_frame = ctk.CTkFrame(root)
+    main_frame.pack(expand=True, fill="both", padx=10, pady=10)
 
-    commands_label = ttk.Label(main_frame, text="Enter Command", font=("Helvetica", 12, "bold"))
-    commands_label.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="w")
+    export_button = ctk.CTkButton(main_frame, text="Export to CSV", font=("Segoe UI", 14, "bold"), command=export_to_csv)
+    export_button.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="w")
 
-    command_entry = tk.Text(main_frame, height=4, width=100, bg="#444444", fg="white")
-    command_entry.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="ew")
+    commands_label = ctk.CTkLabel(main_frame, text="Enter Command", font=("Segoe UI", 14, "bold"))
+    commands_label.grid(row=1, column=0, padx=10, pady=(10, 5), sticky="w")
 
-    submit_button = ttk.Button(main_frame, text="Submit Command", command=lambda: submit_command(command_entry, output_text, progress_var, root))
-    submit_button.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="ew")
+    command_entry = ctk.CTkTextbox(main_frame, height=8, width=60, font=("Calibri", 14))
+    command_entry.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="ew")
 
-    progress_var = tk.DoubleVar()
-    progress_bar = ttk.Progressbar(main_frame, variable=progress_var, maximum=100, mode="determinate")
-    progress_bar.grid(row=2, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
+    submit_button = ctk.CTkButton(main_frame, text="Submit Command", font=("Segoe UI", 14, "bold"), command=lambda: submit_command(command_entry, output_text, progress_var, root))
+    submit_button.grid(row=2, column=1, padx=10, pady=(0, 10), sticky="ew")
 
-    preset_commands = {
-        "List Processes": "Get-Process | Select-Object -First 100",
-        "List Services": "Get-Service | Select-Object -First 100",
-        "System Information": "Get-CimInstance -ClassName Win32_ComputerSystem",
-        "List Disk Drives": "Get-WmiObject -Class Win32_DiskDrive | Select-Object -First 100",
-        "List Network Adapters": "Get-NetAdapter | Select-Object -First 100",
-        "List Printers": "Get-Printer | Select-Object -First 100",
-        "List Installed Software": "Get-WmiObject -Class Win32_Product | Select-Object -First 100",
-        "Check System Uptime": "Get-CimInstance Win32_OperatingSystem | Select-Object LastBootUpTime, @{Name='Uptime';Expression={[datetime]::Now - $_.LastBootUpTime}}"
-    }
+    global help_toggle
+    help_toggle = ctk.BooleanVar()
+    help_button = ctk.CTkCheckBox(main_frame, text="Help Mode", font=("Segoe UI", 14), variable=help_toggle, command=lambda: load_preset_commands(preset_frame, help_toggle.get()))
+    help_button.grid(row=3, column=0, padx=10, pady=(10, 5), sticky="w")
 
-    preset_frame = ttk.Frame(main_frame, style="Custom.TFrame")
-    preset_frame.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
+    progress_var = ctk.DoubleVar()
+    progress_bar = ctk.CTkProgressBar(main_frame, variable=progress_var, width=600)
+    progress_bar.grid(row=4, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
 
-    scrollbar = tk.Scrollbar(preset_frame)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    preset_frame = ctk.CTkFrame(main_frame)
+    preset_frame.grid(row=5, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
 
-    command_list = tk.Listbox(preset_frame, yscrollcommand=scrollbar.set, bg="#333333", fg="white", selectbackground="#555555", selectforeground="white", font=("Courier", 10))
-    command_list.pack(expand=True, fill=tk.BOTH)
-    scrollbar.config(command=command_list.yview)
+    def load_preset_commands(frame, help_mode):
+        global preset_commands, preset_help
 
-    for label, command in preset_commands.items():
-        command_list.insert(tk.END, label)
+        commands = toggle_help_commands() if help_mode else preset_commands
 
-    def load_command_from_list(event):
-        selection = command_list.curselection()
-        if selection:
-            index = selection[0]
-            label = command_list.get(index)
-            load_command(command_entry, preset_commands[label])
+        for widget in frame.winfo_children():
+            widget.destroy()
 
-    command_list.bind("<<ListboxSelect>>", load_command_from_list)
+        for idx, (label, command) in enumerate(commands.items(), start=1):
+            preset_button = ctk.CTkButton(frame, text=label, font=("Segoe UI", 14), command=lambda cmd=command: load_command(command_entry, cmd))
+            preset_button.grid(row=0, column=idx, padx=5, pady=5, sticky="ew")
 
-    output_label = ttk.Label(main_frame, text="Output", font=("Helvetica", 12, "bold"))
-    output_label.grid(row=4, column=0, pady=(10, 5), sticky="w")
+    load_preset_commands(preset_frame, help_toggle.get())
 
-    output_frame = ttk.Frame(main_frame)
-    output_frame.grid(row=5, column=0, sticky="nsew")
-    main_frame.rowconfigure(5, weight=1)
+    output_frame = ctk.CTkFrame(main_frame)
+    output_frame.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
+
+    main_frame.rowconfigure(6, weight=1)
+    main_frame.rowconfigure(7, weight=1)
     main_frame.columnconfigure(0, weight=1)
 
-    scrollbar_output = tk.Scrollbar(output_frame)
-    scrollbar_output.pack(side=tk.RIGHT, fill=tk.Y)
+    scrollbar_output = ctk.CTkScrollbar(output_frame)
+    scrollbar_output.pack(side="right", fill="y")
 
-    output_text = tk.Text(output_frame, height=15, width=100, yscrollcommand=scrollbar_output.set, bg="#444444", fg="white")
-    output_text.pack(expand=True, fill=tk.BOTH)
-    scrollbar_output.config(command=output_text.yview)
+    output_text = ctk.CTkTextbox(output_frame, height=10, font=("Consolas", 14))
+    output_text.pack(expand=True, fill="both")
+    scrollbar_output.configure(command=output_text.yview)
 
-    clear_button = ttk.Button(main_frame, text="Clear Output", command=lambda: clear_output(output_text))
-    clear_button.grid(row=5, column=1, padx=10, pady=(10, 10), sticky="ew")
+    clear_button = ctk.CTkButton(main_frame, text="Clear Output", font=("Segoe UI", 14, "bold"), command=lambda: clear_output(output_text))
+    clear_button.grid(row=8, column=0, columnspan=2, padx=10, pady=(10, 10), sticky="ew")
 
     root.mainloop()
 
