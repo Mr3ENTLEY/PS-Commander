@@ -2,7 +2,7 @@
 Date: July 8, 2024
 Written By: Jeffrey Bentley
 Name: PSCommander
-Description: PS Commander is a versatile and user-friendly GUI application designed to execute and manage PowerShell commands efficiently. Built using the Tkinter library in Python, this application offers a seamless experience for both novice and advanced users of PowerShell.
+Description: PS Commander is a versatile and user-friendly GUI application designed to execute and manage PowerShell commands efficiently. Built using the Tkinter library in Python, this application offers a simplistic experience for both novice and advanced users of PowerShell.
 """
 import tkinter as tk
 from tkinter import messagebox, ttk
