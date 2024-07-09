@@ -26,16 +26,27 @@ def submit_command(command_entry, output_text):
 def clear_output(output_text):
     output_text.delete(1.0, tk.END)
 
-def open_settings():
-    # Function to create and open the settings window
-    settings_window = tk.Toplevel()
-    settings_window.title("Settings")
-    
-    label = ttk.Label(settings_window, text="Settings Page")
-    label.pack(padx=20, pady=20)
+def toggle_settings(settings_frame, main_frame):
+    if settings_frame.winfo_viewable():
+        settings_frame.grid_remove()
+        main_frame.grid()
+    else:
+        main_frame.grid_remove()
+        settings_frame.grid()
 
-    close_button = ttk.Button(settings_window, text="Close", command=settings_window.destroy)
-    close_button.pack(pady=10)
+def toggle_mode(root, mode):
+    if mode.get() == "Dark":
+        root.configure(bg="#333333")
+        style.configure("TButton", background="#666666", foreground="black")
+        style.configure("TLabel", background="#333333", foreground="white")
+        style.configure("TFrame", background="#333333")
+        style.configure("TText", background="#444444", foreground="white")
+    else:
+        root.configure(bg="#ffffff")
+        style.configure("TButton", background="#cccccc", foreground="black")
+        style.configure("TLabel", background="#ffffff", foreground="black")
+        style.configure("TFrame", background="#ffffff")
+        style.configure("TText", background="#ffffff", foreground="black")
 
 def load_command(command_entry, command):
     command_entry.delete("1.0", tk.END)  # Clear existing text
@@ -54,17 +65,21 @@ def create_gui():
 
     root.rowconfigure(0, weight=0)
     root.rowconfigure(1, weight=0)
-    root.rowconfigure(2, weight=1)
-    root.rowconfigure(3, weight=4)
-    root.rowconfigure(4, weight=0)
+    root.rowconfigure(2, weight=0)
+    root.rowconfigure(3, weight=0)
+    root.rowconfigure(4, weight=1)
     root.rowconfigure(5, weight=0)
     root.columnconfigure(0, weight=1)
     root.columnconfigure(1, weight=0)
 
-    commands_label = ttk.Label(root, text="Enter Command", font=("Helvetica", 12, "bold"))
+    # Main frame for command input and output
+    main_frame = ttk.Frame(root)
+    main_frame.grid(row=0, column=0, rowspan=6, columnspan=2, sticky="nsew")
+
+    commands_label = ttk.Label(main_frame, text="Enter Command", font=("Helvetica", 12, "bold"))
     commands_label.grid(row=0, column=0, pady=(10, 5), sticky="nsew")
 
-    command_entry = tk.Text(root, height=6, width=100, bg="#444444", fg="white")
+    command_entry = tk.Text(main_frame, height=4, width=100, bg="#444444", fg="white")
     command_entry.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="ew")
 
     preset_commands = {
@@ -75,18 +90,22 @@ def create_gui():
         "Network Adapters": "Get-NetAdapter"
     }
 
-    preset_frame = ttk.Frame(root)
-    preset_frame.grid(row=2, column=0, padx=10, pady=5, sticky="nsew")
+    preset_frame = ttk.Frame(main_frame)
+    preset_frame.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
 
     for index, (label, command) in enumerate(preset_commands.items()):
         button = ttk.Button(preset_frame, text=label, command=lambda cmd=command: load_command(command_entry, cmd))
         button.grid(row=0, column=index, padx=5, pady=5, sticky="ew")
 
-    output_label = ttk.Label(root, text="Output", font=("Helvetica", 12, "bold"))
+    submit_button = ttk.Button(main_frame, text="Submit Command", command=lambda: submit_command(command_entry, output_text))
+    submit_button.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="ew")
+
+    output_label = ttk.Label(main_frame, text="Output", font=("Helvetica", 12, "bold"))
     output_label.grid(row=3, column=0, pady=(10, 5), sticky="nsew")
 
-    output_frame = ttk.Frame(root)
+    output_frame = ttk.Frame(main_frame)
     output_frame.grid(row=4, column=0, sticky="nsew")
+    main_frame.rowconfigure(4, weight=1)
 
     scrollbar = tk.Scrollbar(output_frame)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -95,16 +114,33 @@ def create_gui():
     output_text.pack(expand=True, fill=tk.BOTH)
     scrollbar.config(command=output_text.yview)
 
-    clear_button = ttk.Button(root, text="Clear Output", command=lambda: clear_output(output_text))
+    clear_button = ttk.Button(main_frame, text="Clear Output", command=lambda: clear_output(output_text))
     clear_button.grid(row=4, column=1, padx=10, pady=(0, 10), sticky="ew")
 
-    submit_button = ttk.Button(root, text="Submit Command", command=lambda: submit_command(command_entry, output_text))
-    submit_button.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="ew")
-
-    settings_button = ttk.Button(root, text="Settings", command=open_settings)
+    settings_button = ttk.Button(main_frame, text="Settings", command=lambda: toggle_settings(settings_frame, main_frame))
     settings_button.grid(row=5, column=0, pady=10)
 
-    command_entry.grid(sticky="nsew")
+    # Settings frame
+    settings_frame = ttk.Frame(root)
+    settings_frame.grid(row=0, column=0, rowspan=6, columnspan=2, sticky="nsew")
+    settings_frame.grid_remove()
+
+    settings_label = ttk.Label(settings_frame, text="Settings Page", font=("Helvetica", 12, "bold"))
+    settings_label.grid(row=0, column=0, pady=20, padx=20, sticky="nsew")
+
+    mode_label = ttk.Label(settings_frame, text="Select Mode:", font=("Helvetica", 10))
+    mode_label.grid(row=1, column=0, pady=10, padx=20, sticky="w")
+
+    mode = tk.StringVar(value="Dark")
+    mode_toggle = ttk.Combobox(settings_frame, textvariable=mode, values=["Dark", "Light"])
+    mode_toggle.grid(row=1, column=1, pady=10, padx=20, sticky="w")
+
+    mode_toggle.bind("<<ComboboxSelected>>", lambda event: toggle_mode(root, mode))
+
+    close_settings_button = ttk.Button(settings_frame, text="Close Settings", command=lambda: toggle_settings(settings_frame, main_frame))
+    close_settings_button.grid(row=2, column=0, pady=10, padx=20, sticky="nsew")
+
+    command_entry.grid(sticky="ew")
     output_frame.rowconfigure(0, weight=1)
     output_frame.columnconfigure(0, weight=1)
 
