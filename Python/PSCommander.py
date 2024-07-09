@@ -106,6 +106,10 @@ def submit_command(command_entry, output_text, progress_var, root):
 def clear_output(output_text):
     output_text.delete(1.0, ctk.END)
 
+def load_command(command_entry, command):
+    command_entry.delete("1.0", ctk.END)
+    command_entry.insert(ctk.END, command.strip())
+
 def export_to_csv():
     global preset_commands
 
@@ -173,7 +177,7 @@ def create_gui():
             widget.destroy()
 
         for idx, (label, command) in enumerate(commands.items(), start=1):
-            preset_button = ctk.CTkButton(frame, text=label, font=("Segoe UI", 14), command=lambda cmd=command: command_entry.delete("1.0", ctk.END) or command_entry.insert(ctk.END, cmd))
+            preset_button = ctk.CTkButton(frame, text=label, font=("Segoe UI", 14), command=lambda cmd=command: load_command(command_entry, cmd))
             preset_button.grid(row=0, column=idx, padx=5, pady=5, sticky="ew")
 
     load_preset_commands(preset_frame, help_toggle.get())
@@ -193,9 +197,11 @@ def create_gui():
     scrollbar_output.configure(command=output_text.yview)
 
     clear_button = ctk.CTkButton(main_frame, text="Clear Output", font=("Segoe UI", 14, "bold"), command=lambda: clear_output(output_text))
-    clear_button.grid(row=7, column=1, padx=10, pady=(10, 10), sticky="e")
+    clear_button.grid(row=8, column=0, columnspan=2, padx=10, pady=(10, 10), sticky="ew")
 
     root.mainloop()
 
 if __name__ == "__main__":
     create_gui()
+
+
