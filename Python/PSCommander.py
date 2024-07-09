@@ -31,11 +31,10 @@ def open_settings():
     settings_window = tk.Toplevel()
     settings_window.title("Settings")
     
-    # Example settings UI (you can customize this)
-    label = tk.Label(settings_window, text="Settings Page")
+    label = ttk.Label(settings_window, text="Settings Page")
     label.pack(padx=20, pady=20)
 
-    close_button = tk.Button(settings_window, text="Close", command=settings_window.destroy)
+    close_button = ttk.Button(settings_window, text="Close", command=settings_window.destroy)
     close_button.pack(pady=10)
 
 def load_command(command_entry, command):
@@ -45,29 +44,29 @@ def load_command(command_entry, command):
 def create_gui():
     root = tk.Tk()
     root.title("PowerShell Commander")
-
-    # Set background color to dark grey
     root.configure(bg="#333333")
 
-    # Configure the root window to be resizable
-    root.rowconfigure(0, weight=0)  # Commands entry row
-    root.rowconfigure(1, weight=0)  # Commands buttons row
-    root.rowconfigure(2, weight=1)  # Output title row
-    root.rowconfigure(3, weight=4)  # Output row (expandable)
-    root.rowconfigure(4, weight=0)  # Clear and submit button row
-    root.rowconfigure(5, weight=0)  # Settings button row
-    root.columnconfigure(0, weight=1)  # Column for all widgets
-    root.columnconfigure(1, weight=0)  # Column for buttons
+    style = ttk.Style()
+    style.configure("TButton", padding=6, relief="flat", background="#666666", foreground="black")
+    style.configure("TLabel", background="#333333", foreground="white")
+    style.configure("TFrame", background="#333333")
+    style.configure("TText", background="#444444", foreground="white")
 
-    # Title for Commands Section
-    commands_label = tk.Label(root, text="Enter Command", font=("Helvetica", 12, "bold"), bg="#333333", fg="white")
-    commands_label.grid(row=0, column=0, pady=(10, 5), sticky="nsew")  # Centered, sticky to center
+    root.rowconfigure(0, weight=0)
+    root.rowconfigure(1, weight=0)
+    root.rowconfigure(2, weight=1)
+    root.rowconfigure(3, weight=4)
+    root.rowconfigure(4, weight=0)
+    root.rowconfigure(5, weight=0)
+    root.columnconfigure(0, weight=1)
+    root.columnconfigure(1, weight=0)
 
-    # Text entry for command
+    commands_label = ttk.Label(root, text="Enter Command", font=("Helvetica", 12, "bold"))
+    commands_label.grid(row=0, column=0, pady=(10, 5), sticky="nsew")
+
     command_entry = tk.Text(root, height=6, width=100, bg="#444444", fg="white")
     command_entry.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="ew")
 
-    # Preset commands dictionary
     preset_commands = {
         "List Processes": "Get-Process",
         "List Services": "Get-Service",
@@ -76,45 +75,35 @@ def create_gui():
         "Network Adapters": "Get-NetAdapter"
     }
 
-    # Frame for preset buttons
-    preset_frame = tk.Frame(root, bg="#333333")
+    preset_frame = ttk.Frame(root)
     preset_frame.grid(row=2, column=0, padx=10, pady=5, sticky="nsew")
 
-    # Create buttons for preset commands horizontally
     for index, (label, command) in enumerate(preset_commands.items()):
-        button = tk.Button(preset_frame, text=label, command=lambda cmd=command: load_command(command_entry, cmd), bg="#666666", fg="white")
+        button = ttk.Button(preset_frame, text=label, command=lambda cmd=command: load_command(command_entry, cmd))
         button.grid(row=0, column=index, padx=5, pady=5, sticky="ew")
 
-    # Title for Output Section
-    output_label = tk.Label(root, text="Output", font=("Helvetica", 12, "bold"), bg="#333333", fg="white")
-    output_label.grid(row=3, column=0, pady=(10, 5), sticky="nsew")  # Centered, sticky to center
+    output_label = ttk.Label(root, text="Output", font=("Helvetica", 12, "bold"))
+    output_label.grid(row=3, column=0, pady=(10, 5), sticky="nsew")
 
-    # Frame for output and scrollbar
-    output_frame = tk.Frame(root, bg="#333333")
+    output_frame = ttk.Frame(root)
     output_frame.grid(row=4, column=0, sticky="nsew")
 
-    # Scrollbar for text widget
     scrollbar = tk.Scrollbar(output_frame)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-    # Text widget for displaying output
     output_text = tk.Text(output_frame, height=15, width=100, yscrollcommand=scrollbar.set, bg="#444444", fg="white")
     output_text.pack(expand=True, fill=tk.BOTH)
     scrollbar.config(command=output_text.yview)
 
-    # Button to clear output
-    clear_button = tk.Button(root, text="Clear Output", command=lambda: clear_output(output_text), bg="#666666", fg="white")
+    clear_button = ttk.Button(root, text="Clear Output", command=lambda: clear_output(output_text))
     clear_button.grid(row=4, column=1, padx=10, pady=(0, 10), sticky="ew")
 
-    # Button to submit command
-    submit_button = tk.Button(root, text="Submit Command", command=lambda: submit_command(command_entry, output_text), bg="#666666", fg="white")
+    submit_button = ttk.Button(root, text="Submit Command", command=lambda: submit_command(command_entry, output_text))
     submit_button.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="ew")
 
-    # Button to open settings
-    settings_button = tk.Button(root, text="Settings", command=open_settings, bg="#666666", fg="white")
+    settings_button = ttk.Button(root, text="Settings", command=open_settings)
     settings_button.grid(row=5, column=0, pady=10)
 
-    # Make the text widget and command entry expand with the window
     command_entry.grid(sticky="nsew")
     output_frame.rowconfigure(0, weight=1)
     output_frame.columnconfigure(0, weight=1)
