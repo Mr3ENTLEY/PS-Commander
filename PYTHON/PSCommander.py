@@ -4,9 +4,8 @@ Written By: Jeffrey Bentley
 Name: PSCommander
 Description: PS Commander is a versatile and user-friendly GUI application designed to execute and manage PowerShell commands efficiently. Built using the CustomTkinter library, this application offers a simplistic experience for both novice and advanced users of PowerShell.
 """
-
 import customtkinter as ctk
-from tkinter import PhotoImage, messagebox, filedialog
+from tkinter import PhotoImage, messagebox, filedialog, Scrollbar
 import subprocess
 import threading
 import time
@@ -148,25 +147,43 @@ def create_gui():
     export_button.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="w")
 
     commands_label = ctk.CTkLabel(main_frame, text="Enter Command", font=("Segoe UI", 14, "bold"))
-    commands_label.grid(row=1, column=0, padx=10, pady=(10, 5), sticky="w")
+    commands_label.grid(row=1, column=0, padx=(10, 5), pady=5, sticky="w")
 
     command_entry = ctk.CTkTextbox(main_frame, height=8, width=60, font=("Calibri", 14))
-    command_entry.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="ew")
+    command_entry.grid(row=1, column=1, padx=(5, 10), pady=5, sticky="ew")
 
     submit_button = ctk.CTkButton(main_frame, text="Submit Command", font=("Segoe UI", 14, "bold"), command=lambda: submit_command(command_entry, output_text, progress_var, root))
-    submit_button.grid(row=2, column=1, padx=10, pady=(0, 10), sticky="ew")
+    submit_button.grid(row=1, column=2, padx=(5, 10), pady=5, sticky="ew")
 
     global help_toggle
     help_toggle = ctk.BooleanVar()
-    help_button = ctk.CTkCheckBox(main_frame, text="Help Mode", font=("Segoe UI", 14), variable=help_toggle, command=lambda: load_preset_commands(preset_frame, help_toggle.get()))
+    help_button = ctk.CTkCheckBox(main_frame, text="Help Mode", font=("Segoe UI", 14), variable=help_toggle, command=lambda: load_preset_commands(scrollable_frame, help_toggle.get()))
     help_button.grid(row=3, column=0, padx=10, pady=(10, 5), sticky="w")
 
     progress_var = ctk.DoubleVar()
     progress_bar = ctk.CTkProgressBar(main_frame, variable=progress_var, width=600)
     progress_bar.grid(row=4, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
 
+    # Create a scrollable frame for preset buttons
     preset_frame = ctk.CTkFrame(main_frame)
     preset_frame.grid(row=5, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
+
+    canvas = ctk.CTkCanvas(preset_frame, height=35)
+    canvas.pack(side="top", fill="x", expand=False)
+
+    h_scrollbar = Scrollbar(preset_frame, orient="horizontal", command=canvas.xview)
+    h_scrollbar.pack(side="bottom", fill="x")
+
+    scrollable_frame = ctk.CTkFrame(canvas)
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(
+            scrollregion=canvas.bbox("all")
+        )
+    )
+
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(xscrollcommand=h_scrollbar.set)
 
     def load_preset_commands(frame, help_mode):
         global preset_commands, preset_help
@@ -180,14 +197,14 @@ def create_gui():
             preset_button = ctk.CTkButton(frame, text=label, font=("Segoe UI", 14), command=lambda cmd=command: load_command(command_entry, cmd))
             preset_button.grid(row=0, column=idx, padx=5, pady=5, sticky="ew")
 
-    load_preset_commands(preset_frame, help_toggle.get())
+    load_preset_commands(scrollable_frame, help_toggle.get())
 
     output_frame = ctk.CTkFrame(main_frame)
     output_frame.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
 
     main_frame.rowconfigure(6, weight=1)
-    main_frame.rowconfigure(7, weight=1)
     main_frame.columnconfigure(0, weight=1)
+    main_frame.columnconfigure(1, weight=1)
 
     scrollbar_output = ctk.CTkScrollbar(output_frame)
     scrollbar_output.pack(side="right", fill="y")
