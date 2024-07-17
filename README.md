@@ -4,7 +4,7 @@ PowerShell Commander is a Python application that provides a graphical user inte
 
 ## Features
 
-- Execute predefined PowerShell commands with a single click.
+- Execute predefined PowerShell commands using a GUI.
 - View detailed system information and hardware configurations.
 - Export command results to CSV files.
 - Toggle between command and help mode for PowerShell commands.
