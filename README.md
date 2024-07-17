@@ -15,15 +15,15 @@ PowerShell Commander is a Python application that provides a graphical user inte
 
 The application includes a set of predefined PowerShell commands:
 
-- **System Information**: `Get-CimInstance -ClassName Win32_ComputerSystem | Format-List *`
-- **List Disk Drives**: `Get-WmiObject -Class Win32_DiskDrive | Select-Object DeviceID, Model, Size, MediaType`
-- **List Network Adapters**: `Get-NetAdapter | Select-Object Name, InterfaceDescription, Status, MacAddress`
-- **List Active Network Connections**: `Get-NetTCPConnection | Select-Object LocalAddress, LocalPort, RemoteAddress, RemotePort, State`
-- **List Printers**: `Get-Printer | Select-Object Name, DriverName, PortName, Shared`
-- **List Installed Software**: `Get-WmiObject -Class Win32_Product | Select-Object Name, Vendor, Version, InstallDate`
-- **List Processes**: `Get-Process | Select-Object Name, Id, CPU, Responding, Path`
-- **List Services**: `Get-Service | Select-Object DisplayName, Status, ServiceType, StartType`
-- **Check System Uptime**: `Get-CimInstance Win32_OperatingSystem | Select-Object LastBootUpTime, @{Name='Uptime';Expression={[DateTime]::Now - [Management.ManagementDateTimeConverter]::ToDateTime($_.LastBootUpTime)}}`
+- **System Information**
+- **List Disk Drives**
+- **List Network Adapters**
+- **List Active Network Connections**
+- **List Printers**
+- **List Installed Software**
+- **List Processes**
+- **List Services**
+- **Check System Uptime**
 
 ## Installation
 
