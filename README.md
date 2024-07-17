@@ -30,7 +30,7 @@ The application includes a set of predefined PowerShell commands:
 1. Clone the repository:
     
     ```bash
-   git clone https://github.com/your-username/PowerShell-Commander.git
+   git clone https://github.com/Mr3ENTLEY/PS-Commander.git
 
 2. Install the required dependencies:
     ```bash
