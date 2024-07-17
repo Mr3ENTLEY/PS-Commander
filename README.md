@@ -43,31 +43,31 @@ The application includes a set of predefined PowerShell commands:
 
 ## Usage
 
-    Enter Command: Type or select a command to execute.
+- Enter Command: Type or select a command to execute.
     
-    Submit Command: Click to run the entered command.
+- Submit Command: Click to run the entered command.
     
-    Help Mode: Toggle to view PowerShell help documentation for commands.
+- Help Mode: Toggle to view PowerShell help documentation for commands.
     
-    Export to CSV: Save the list of predefined commands to a CSV file.
+- Export to CSV: Save the list of predefined commands to a CSV file.
     
-    Clear Output: Clear the output display area.
+- Clear Output: Clear the output display area.
 
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
 
-    1. Fork the repository.
+1. Fork the repository.
     
-    2. Create a new branch (git checkout -b feature-branch).
+2. Create a new branch (git checkout -b feature-branch).
     
-    3. Make your changes.
+3. Make your changes.
     
-    4. Commit your changes (git commit -m 'Add new feature').
+4. Commit your changes (git commit -m 'Add new feature').
     
-    5. Push to the branch (git push origin feature-branch).
+5. Push to the branch (git push origin feature-branch).
     
-    6. Create a new Pull Request.
+6. Create a new Pull Request.
 
 ## License
 
