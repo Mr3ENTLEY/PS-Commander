@@ -27,6 +27,8 @@ The application includes a set of predefined PowerShell commands:
 
 ## Installation
 
+### Method 1
+
 1. Clone the repository:
     
     ```bash
@@ -41,13 +43,15 @@ The application includes a set of predefined PowerShell commands:
     ```bash
     python powershell_commander.py
     
-4. OR
+### Method 2
 
-5. Navigate to Releases
+1. Navigate to Releases
 
-6. Download the EXE
+2. Download the EXE
 
-7. Run the EXE
+3. Run the EXE
+
+   
 ## Usage
 
 - Enter Command: Type or select a command to execute.
