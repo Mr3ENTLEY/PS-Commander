@@ -5,7 +5,6 @@
         MinWidth="450" MinHeight="300"
         MaxWidth="1920" MaxHeight="1080">
     <Grid Background="#222">
-        <!-- Define rows and columns for layout -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -17,7 +16,6 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Input Section -->
         <Grid Grid.Row="0" Margin="0,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -49,7 +47,6 @@
                     Foreground="#FFF"/>
         </Grid>
 
-        <!-- Predefined Commands Section -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
             <Label Content="Predefined Commands:" 
                    FontSize="12" FontWeight="Regular" 
@@ -65,7 +62,6 @@
         </StackPanel>
         
 
-        <!-- Output Section -->
         <Grid Grid.Row="2" Margin="0,5">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -90,7 +86,6 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- Progress Indicator -->
         <ProgressBar x:Name="ProgressIndicator" 
                      Grid.Row="3"
                      IsIndeterminate="True" 
@@ -99,7 +94,6 @@
                      Background="#333"
                      Foreground="#FFF"/>
 
-        <!-- Control Buttons Section -->
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10">
             <Button Content="Clear Output" 
                     Click="ClearOutput_Click" 
